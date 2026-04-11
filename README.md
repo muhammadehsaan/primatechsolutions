@@ -34,3 +34,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## SEO Tracking Setup
+
+For real-user Core Web Vitals tracking in Google Analytics:
+
+1. Add `NEXT_PUBLIC_GA_MEASUREMENT_ID` to `.env.local`.
+2. Restart the dev server.
+3. Open Google Analytics and check events: `CLS`, `LCP`, `INP`, `FCP`, and `TTFB`.
+4. Optional: set `NEXT_PUBLIC_WEB_VITALS_ENDPOINT` to post metrics to your own endpoint/warehouse.
