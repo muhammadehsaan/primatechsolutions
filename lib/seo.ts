@@ -9,6 +9,7 @@ type SeoInput = {
   type?: "website" | "article";
   noindex?: boolean;
   publishedTime?: string;
+  image?: string;
 };
 
 export function createMetadata({
@@ -19,10 +20,16 @@ export function createMetadata({
   type = "website",
   noindex = false,
   publishedTime,
+  image,
 }: SeoInput): Metadata {
   const siteUrl = getSiteUrl();
   const normalizedPath = path === "/" ? "/" : `/${path.replace(/^\/+/, "")}`;
   const absoluteUrl = `${siteUrl}${normalizedPath === "/" ? "" : normalizedPath}`;
+  const absoluteImageUrl = image
+    ? image.startsWith("http://") || image.startsWith("https://")
+      ? image
+      : `${siteUrl}${image.startsWith("/") ? image : `/${image}`}`
+    : undefined;
 
   return {
     title,
@@ -42,12 +49,14 @@ export function createMetadata({
       siteName: "PrimeTech Solutions",
       locale: "en_US",
       type,
+      ...(absoluteImageUrl ? { images: [{ url: absoluteImageUrl }] } : {}),
       ...(publishedTime ? { publishedTime } : {}),
     },
     twitter: {
-      card: "summary_large_image",
+      card: absoluteImageUrl ? "summary_large_image" : "summary",
       title,
       description,
+      ...(absoluteImageUrl ? { images: [absoluteImageUrl] } : {}),
     },
   };
 }

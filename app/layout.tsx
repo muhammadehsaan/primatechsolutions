@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import AppChrome from "@/components/AppChrome";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import MetaPixel from "@/components/MetaPixel";
 import WebVitalsTracker from "@/components/WebVitalsTracker";
 import { getSiteUrl } from "@/lib/site";
+import { getMetaPixelId } from "@/lib/tracking";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -16,15 +16,9 @@ export const metadata: Metadata = {
   },
   description:
     "PrimeTech Solutions delivers web and app development, ERP systems, eCommerce, AI model training, UI/UX, graphic design, 3D animation, business consultation, SEO, Google Ads, and social media services.",
-  icons: {
-    icon: [
-      { url: "/favicon.ico?v=11", type: "image/x-icon" },
-      { url: "/favicon.png?v=11", type: "image/png", sizes: "256x256" },
-    ],
-    shortcut: "/favicon.ico?v=11",
-    apple: "/apple-touch-icon.png?v=11",
-  },
 };
+
+const metaPixelId = getMetaPixelId();
 
 export default function RootLayout({
   children,
@@ -34,21 +28,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-darkBg text-white antialiased">
-        <noscript>
-          <img
-            height="1"
-            width="1"
-            style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=4233324753574194&ev=PageView&noscript=1"
-            alt=""
-          />
-        </noscript>
+        <MetaPixel />
+        {metaPixelId ? (
+          <noscript>
+            <img
+              height="1"
+              width="1"
+              style={{ display: "none" }}
+              src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
+              alt=""
+            />
+          </noscript>
+        ) : null}
         <GoogleAnalytics />
         <WebVitalsTracker />
-        <Navbar />
-        <main className="min-h-screen pt-20">{children}</main>
-        <Footer />
-        <WhatsAppButton />
+        <AppChrome>{children}</AppChrome>
       </body>
     </html>
   );

@@ -16,6 +16,8 @@ type ContentSection = {
   blocks: ContentBlock[];
 };
 
+export const dynamicParams = false;
+
 function isSectionHeading(paragraph: string) {
   return (
     paragraph.length <= 90 &&
@@ -120,6 +122,40 @@ function splitListItem(item: string) {
     label: label.trim(),
     body: rest.join(":").trim(),
   };
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function renderListItemHtml(item: string) {
+  const { label, body } = splitListItem(item);
+  const bodyMarkup = label
+    ? `<p class="font-semibold text-white">${escapeHtml(label)}</p><p class="mt-1 text-sm leading-7 text-gray-300">${escapeHtml(body)}</p>`
+    : `<p class="text-sm leading-7 text-gray-200">${escapeHtml(body)}</p>`;
+
+  return `<div class="rounded-2xl border border-white/10 bg-deepBlue/25 p-4 shadow-[0_12px_30px_rgba(0,0,0,0.12)]"><div class="flex items-start gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 h-5 w-5 shrink-0 text-cyanPrimary" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><div>${bodyMarkup}</div></div></div>`;
+}
+
+function renderSectionBlocksHtml(blocks: ContentBlock[]) {
+  return blocks
+    .map((block) => {
+      if (block.type === "subheading") {
+        return `<div class="inline-flex rounded-full border border-cyanPrimary/25 bg-cyanPrimary/10 px-4 py-2 text-sm font-semibold text-cyanPrimary sm:text-base">${escapeHtml(block.text)}</div>`;
+      }
+
+      if (block.type === "list") {
+        return `<div class="grid grid-cols-1 gap-3 md:grid-cols-2">${block.items.map(renderListItemHtml).join("")}</div>`;
+      }
+
+      return `<p class="max-w-none text-[15px] leading-8 text-gray-200 sm:text-base">${escapeHtml(block.text)}</p>`;
+    })
+    .join("");
 }
 
 export function generateStaticParams() {
@@ -470,62 +506,10 @@ export default async function ServiceDetailsPage({
                     </a>
                   </div>
 
-                  <div className="mt-6 space-y-5">
-                    {section.blocks.map((block, blockIndex) => {
-                      if (block.type === "subheading") {
-                        return (
-                          <div
-                            key={`${block.text}-${blockIndex}`}
-                            className="inline-flex rounded-full border border-cyanPrimary/25 bg-cyanPrimary/10 px-4 py-2 text-sm font-semibold text-cyanPrimary sm:text-base"
-                          >
-                            {block.text}
-                          </div>
-                        );
-                      }
-
-                      if (block.type === "list") {
-                        return (
-                          <div
-                            key={`list-${section.id}-${blockIndex}`}
-                            className="grid grid-cols-1 gap-3 md:grid-cols-2"
-                          >
-                            {block.items.map((item) => {
-                              const { label, body } = splitListItem(item);
-                              return (
-                                <div
-                                  key={item}
-                                  className="rounded-2xl border border-white/10 bg-deepBlue/25 p-4 shadow-[0_12px_30px_rgba(0,0,0,0.12)]"
-                                >
-                                  <div className="flex items-start gap-3">
-                                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-cyanPrimary" />
-                                    <div>
-                                      {label ? (
-                                        <>
-                                          <p className="font-semibold text-white">{label}</p>
-                                          <p className="mt-1 text-sm leading-7 text-gray-300">{body}</p>
-                                        </>
-                                      ) : (
-                                        <p className="text-sm leading-7 text-gray-200">{body}</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <p
-                          key={`${block.text}-${blockIndex}`}
-                          className="max-w-none text-[15px] leading-8 text-gray-200 sm:text-base"
-                        >
-                          {block.text}
-                        </p>
-                      );
-                    })}
-                  </div>
+                  <div
+                    className="mt-6 space-y-5"
+                    dangerouslySetInnerHTML={{ __html: renderSectionBlocksHtml(section.blocks) }}
+                  />
                 </section>
               ))}
             </div>
